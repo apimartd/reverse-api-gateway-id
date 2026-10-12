@@ -1,46 +1,124 @@
-# reverse-api-gateway-id — gateway API (Indonesia)
+# Seedream 4.5 API (`seedream-4-5`)
 
-> **One OpenAI-compatible key, 300+ models** · image2.5 **$0.0085/image** · Seedance 2.0 Mini **$0.01056/sec** · LLM from **$0.0228 / M tokens** · $1 minimum top-up.
+<!-- conv-kit:v1 -->
 
-**[Lihat harga](https://go.apimart.ai/k-b3c9e3)** · **[Dapatkan kunci API](https://go.apimart.ai/k-8e38e8)**
+<p align="center">
+  <img src="assets/badges/price.svg" alt="observed unit price"> <img src="assets/badges/billing.svg" alt="billing model"> <img src="assets/badges/compat.svg" alt="OpenAI-compatible endpoint">
+</p>
 
-reverse-api-gateway-id menempatkan satu `base_url` dan satu kunci di depan 300+ model — pembayaran USD, bayar sesuai pemakaian, isi ulang minimal $1.
+<p align="center">
+  <img src="assets/01-product-hero-perfume.jpg" width="820" alt="Sample render via the APIMart image API">
+</p>
 
-### rekayasa balik / reverse-engineered routes
+> **from $0.026 per image** — one OpenAI-compatible endpoint at `https://api.apimart.ai/v1`, no monthly plan required. *(observed 2026-10-12)*
 
-reverse-api-gateway-id mencantumkan rute **rekayasa balik** dan resmi berdampingan: ID `-ext` adalah label balik, model lain lewat rute resmi dengan harga diskon. Satu kunci mencakup keduanya.
+**[Get an API key](https://go.apimart.ai/k-db1021)** · **[Live pricing](https://go.apimart.ai/k-c3546e)** · **[Model page](https://go.apimart.ai/k-66e46e)** · [⚡ 60-second quickstart](#quickstart)
 
-## Published unit prices (snapshot 2026-09-28)
+**Why teams call Seedream 4.5 (`seedream-4-5`) through APIMart**
 
-| Unit | Price |
-| --- | --- |
-| `GPT Image 2.5 (1K)` | $0.0085 |
-| `Seedance 2.0 Mini (480P/sec)` | $0.01056 |
-| `Qwen3.7 Flash (per M input)` | $0.0228568 |
+- **One key, entire catalog.** The same `https://api.apimart.ai/v1` base URL and `Authorization` header reach Seedream 4.5 (`seedream-4-5`) and 300+ other image, video and language models — switch the `model` field, not your client.
+- **$1 minimum, pay as you go.** No subscription and no prepaid plan to size up front: top up from $1 and spend it on calls.
+- **The charge comes back in the response.** Every completed task reports the amount billed (`cost` / `credits_cost`); a task marked `failed` is refunded.
+- **Async by design.** Submit, take the `task_id`, poll `GET /v1/tasks/{id}` — batching and retries are ordinary queue work, not a bespoke integration.
+
+<!-- /conv-kit:v1 -->
+
+Seedream 4.5 delivers ByteDance's 4K text-to-image generation with precise text rendering, multi-reference style fusion and unified editing.
+
+## Model id and routes
+
+| Route | `model` value | Billing | Notes |
+| --- | --- | --- | --- |
+| Per-image | `seedream-4-5` | per delivered image, by resolution | see the [model page](https://go.apimart.ai/k-66e46e) for the exact tiers |
+
+Endpoint: `POST https://api.apimart.ai/v1/images/generations` (OpenAI-compatible), then poll `GET /v1/tasks/{task_id}`.
+
+## Pricing
+
+<!-- pricing:model:start -->
+| Output | List price | Effective price |
+| --- | --- | --- |
+| default | 0.0325 | 0.026 |
+
+
+<!-- pricing:model:end -->
+
+Prices are a snapshot; the [pricing page](https://go.apimart.ai/k-c3546e) and [`data/model.json`](data/model.json) are refreshed by CI, and a completed task reports the exact amount in its `cost` field.
+
+## Request parameters
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `model` | string | required | the model id shown in the route table above |
+| `prompt` | string | required | what to generate, or what to change when editing |
+| `size` | string | `auto` / `1:1` | aspect ratio, or `auto` where the route supports it |
+| `resolution` | string | `1K` | output resolution tier — cost scales with it |
+| `n` | integer | `1` | number of images per task, where the route allows more than one |
+| `image_urls` | string[] | — | reference images as public HTTP(S) URLs or base64 data URLs |
+| `nsfw_check` | boolean | `false` | runs `omni-moderation-latest` before submitting |
+
+The table lists the fields accepted by the APIMart OpenAI-compatible image endpoint. Check the [model page](https://go.apimart.ai/k-66e46e) for anything this model adds on top.
 
 ## Quickstart
 
 ```bash
-curl -X POST https://api.apimart.ai/v1/images/generations \
-  -H 'Authorization: Bearer $APIMART_KEY' \
-  -H 'Content-Type: application/json' \
-  -d '{"model":"gpt-image-2.5-ext","prompt":"cozy reading nook, warm lamp, cinematic","size":"1:1","resolution":"1K","n":1}'
+curl --request POST --url https://api.apimart.ai/v1/images/generations \
+  --header "Authorization: Bearer $APIMART_API_KEY" --header 'Content-Type: application/json' \
+  -d '{"model":"seedream-4-5","prompt":"A bamboo forest at sunrise, slow push-in","size":"1:1","resolution":"1K"}'
 ```
 
-Async: submit → get `task_id` → poll `GET https://api.apimart.ai/v1/tasks/<task_id>` → read `cost` / `credits_cost` from the result. Parameter tables, `version`/`resolution`/`size` options and idempotency headers are documented on the model page reachable from the pricing link above.
+```python
+import os, time, requests
 
-## Keywords
+BASE = "https://api.apimart.ai/v1"
+HEADERS = {"Authorization": f"Bearer {os.environ['APIMART_API_KEY']}", "Content-Type": "application/json"}
 
-`rekayasa balik` · `reverse-engineered` · `gateway API` · `relay API` · `nano banana 2 api` · `gpt-image-2.5 api` · `ai api pricing` · `pay-as-you-go`
+created = requests.post(f"{BASE}/images/generations", headers=HEADERS, timeout=60, json={
+    "model": "seedream-4-5", "prompt": "A bamboo forest at sunrise, slow push-in",
+}).json()
+task_id = created["data"]["id"]
 
-## Platform facts
+while True:
+    task = requests.get(f"{BASE}/tasks/{task_id}", headers=HEADERS, timeout=60).json()["data"]
+    if task["status"] in ("completed", "failed"):
+        break
+    time.sleep(5)
+print(task.get("cost"), task["result"]["images"][0]["url"])
+```
 
-- USD settlement, pay-as-you-go, **$1 minimum top-up**, no subscription.
-- Operating since last year; ~100,000 registered users, mostly enterprise accounts.
-- International invoices available on request.
-- 307 models online (live `/v1/models`) as of 2026-09-28.
+Runnable versions: [`examples/`](examples). The task lifecycle is `pending → processing → completed | failed`.
+
+## FAQ
+
+**What is the Seedream 4.5 model id?**
+
+`seedream-4-5`. See the route table above.
+
+**How is it billed?**
+
+**from $0.026 per image**. The completed task reports the exact amount in its `cost` field; a failed task is refunded.
+
+**How do I get a key?**
+
+Use the [Get an API key](https://go.apimart.ai/k-db1021) link — $1 minimum top-up, no plan required.
+
+## Attributed links (how this repository is measured)
+
+| Purpose | Attributed link | Target |
+| --- | --- | --- |
+| Model page | <https://go.apimart.ai/k-66e46e> | `apimart.ai/fr/model/seedream-4-5` |
+| Live pricing | <https://go.apimart.ai/k-c3546e> | `apimart.ai/fr/pricing` |
+| Get an API key | <https://go.apimart.ai/k-db1021> | `apimart.ai/fr/keys` |
+
+Outbound APIMart links are minted through the promo link API; hand-made tracking parameters are rejected by
+`tools/check_links.py` in CI.
 
 ## Disclosure
 
-This repository documents **APIMart**, a third-party API aggregator/gateway. It is **not affiliated with, endorsed by, or sponsored by** OpenAI, Google, Anthropic, xAI, ByteDance or any model vendor. Model names and trademarks belong to their owners. Prices are a point-in-time snapshot and may change; the vendor's console billing is authoritative.
+Seedream 4.5 is a third-party model served through APIMart; this repository documents how to call it and publishes
+model ids and prices, and does not claim official status. Model names, prices and documentation belong to their
+respective owners.
 
+## License
+
+MIT — see [LICENSE](LICENSE).
